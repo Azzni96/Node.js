@@ -1,82 +1,58 @@
-NODE.js
+Express API Project with Pug Template
 
-1- Create a new project Folder and open my project in VScode
-Open Terminal:
+- Ensin siirtää 'express' branch (git checkout -b branch 'express')
 
-``bash:
-mkdir Node.js
-cd Node.js
-code .``
+- Asenta node --> npm init -y
 
-2- Npm install (package.json)
-``npm init -y``
+- Asenta express -->  npm install express
 
-3- Install ESLint and Prettier:
-Terminal
+- Asenta Pug --> npm install Pug
 
-``bash:
+- Tein media.js ja yhdistänut index.js kanssa:
 
-npm install --save-dev --save-exact prettier
+. import { getMediaItems, postMediaItem, getMediaItemsById, mediaItems} from './media.js';
 
-npm install --save-dev eslint @eslint/js eslint-config-prettier globals``
+- src/views/index.pug  näyttää mitä index.pug sisällä, kun kirjoitan index.js kautta 
 
-Create eslint.config.js 
+. app.set('view engine', 'pug');
+. app.set('views', './src/views');
 
-``import globals from 'globals';
-import js from '@eslint/js';
+- Express toimi kun kirjoitan index.js kautta 
 
-export default [
-  {
-    languageOptions: {
-      ecmaVersion: 2021,
-      sourceType: 'module',
-      globals: {...globals.node},
-    },
-  },
-  js.configs.recommended,
-];``
+. import express from 'express'
+. app.use(express.json())
 
-Create .prettierrc.cjs
+-public/index.html näyttää: 
+. app.use(express.static('public'));
 
-``// sample .prettierrc.cjs
-module.exports = {
-  semi: true,
-  singleQuote: true,
-  bracketSpacing: false,
-  trailingComma: 'all',
-};``
+- media/kuva.jpg näyttää 
+. app.use('/media', express.static('media'));
 
-4-Install nodemon:
+-http-request.http
 
-``npm install --save-dev nodemon``
+### Hae kaikki mediaesineet
 
-5- In package.json add 
+get http://localhost:3000/api/media
 
-``...
-"type": "module",
-"scripts": {
-  "dev": "nodemon src/index.js",
-  ...``
+### Hae media esitys
 
-6- Create .gitignore 
+get http://localhost:3000/api/media/1
 
-``.vscode
-node_modules
-.DS_Store``
+### Lisää media esitys
 
-7- Create src/index.js folder and add: 
-``// index.js
-import http from 'http';
-const hostname = '127.0.0.1';
-const port = 3000;
+post http://localhost:3000/api/media
+Content-Type: application/json
 
-const server = http.createServer((req, res) => {
-  res.writeHead(200, {'Content-Type': 'text/plain'});
-  res.end('Welcome to my REST API!');
-});
 
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});``
+{
+  "filename": "new_image.jpg",
+  "filesize": 300000,
+  "title": "New Image",
+  "description": "Description of the new image",
+  "user_id": 1607,
+  "media_type": "image/jpeg",
+  "created_at": "2023-10-20T15:00:00.000Z"
+}
 
-Test your setup: `` npm run dev ``
+
+
