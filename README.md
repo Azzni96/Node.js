@@ -1,6 +1,6 @@
 Express API Project with Pug Template
 
-- Ensin siirtää 'express' branch (git checkout -b branch 'express')
+- Miten teen 'express' branch (git checkout -b branch 'express')
 
 - Asenta node --> npm init -y
 
@@ -53,6 +53,12 @@ Content-Type: application/json
   "media_type": "image/jpeg",
   "created_at": "2023-10-20T15:00:00.000Z"
 }
+
+Miten pystyn tehdä git push express branchiin?
+
+1- git add .
+2- git commit -m "message"
+3- git push origin express
 
 
 
