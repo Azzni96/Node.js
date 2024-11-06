@@ -1,64 +1,94 @@
-Express API Project with Pug Template
+-- Poistetaan vanha tietokanta ja luodaan uusi
+DROP DATABASE IF EXISTS mediashare;
+CREATE DATABASE mediashare;
+USE mediashare;
 
-- Miten teen 'express' branch (git checkout -b branch 'express')
+-- Taulu: Users
+CREATE TABLE Users (
+  user_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  username VARCHAR(255) NOT NULL UNIQUE,
+  password VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL UNIQUE,
+  user_level_id INT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
 
-- Asenta node --> npm init -y
+-- Taulu: MediaItems
+CREATE TABLE MediaItems (
+  media_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  filename VARCHAR(255) NOT NULL,
+  filesize INT NOT NULL,
+  media_type VARCHAR(255) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  description VARCHAR(255),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
 
-- Asenta express -->  npm install express
+-- Taulu: Products
+CREATE TABLE Products (
+  product_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  media_id INT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  discount DECIMAL(5, 2) DEFAULT 0.00,
+  description TEXT,
+  image_urls TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (media_id) REFERENCES MediaItems(media_id)
+);
 
-- Asenta Pug --> npm install Pug
+-- Taulu: Feedback
+CREATE TABLE Feedback (
+  feedback_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  media_id INT NOT NULL,
+  user_id INT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (media_id) REFERENCES MediaItems(media_id),
+  FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
 
-- Tein media.js ja yhdistänut index.js kanssa:
+-- Esimerkkitietojen lisääminen Users-tauluun
+INSERT INTO Users (username, password, email, user_level_id) VALUES 
+  ('VCHar', 'salasana123', 'vchar@example.com', 1),
+  ('Donatello', 'salasana234', 'dona@example.com', 1);
 
-. import { getMediaItems, postMediaItem, getMediaItemsById, mediaItems} from './media.js';
+-- Esimerkkitietojen lisääminen MediaItems-tauluun
+INSERT INTO MediaItems (filename, filesize, title, description, user_id, media_type) VALUES 
+  ('ffd8.jpg', 887574, 'Lempijuoma', NULL, 305, 'image/jpeg'),
+  ('dbbd.jpg', 60703, 'Miika', 'Oma kuva', 305, 'image/jpeg');
 
-- src/views/index.pug  näyttää mitä index.pug sisällä, kun kirjoitan index.js kautta 
+-- Esimerkkitietojen lisääminen Products-tauluun
+INSERT INTO Products (media_id, name, price, discount, description, image_urls) VALUES 
+  (1, 'Tuote A', 19.99, 2.00, 'Esimerkkituotteen kuvaus Tuote A:lle.', 'kuvaA.jpg'),
+  (2, 'Tuote B', 29.99, 0.00, 'Kuvaus Tuote B:lle, laadukas tuote.', 'kuvaB.jpg');
 
-. app.set('view engine', 'pug');
-. app.set('views', './src/views');
+-- Esimerkkitietojen lisääminen Feedback-tauluun
+INSERT INTO Feedback (media_id, user_id, name, email, message) VALUES 
+  (1, 305, 'John Doe', 'john.doe@example.com', 'Mahtavia tuotteita! Olen erittäin tyytyväinen.'),
+  (2, 260, 'Jane Smith', 'jane.smith@example.com', 'Asiakastuki oli erittäin avulias!'),
+  (1, 260, 'Alice Johnson', 'alice.johnson@example.com', 'Toimitus oli nopea ja tuotteet olivat kuvauksen mukaisia.');
 
-- Express toimi kun kirjoitan index.js kautta 
+-- Kyselyt esimerkkikäyttötilanteisiin
 
-. import express from 'express'
-. app.use(express.json())
+-- Hae kaikki palautteet tietylle medialle (esim. media_id = 1)
+SELECT * FROM Feedback WHERE media_id = 1;
 
--public/index.html näyttää: 
-. app.use(express.static('public'));
+-- Hae tietyn käyttäjän kaikki media-tiedostot (esim. user_id = 305)
+SELECT * FROM MediaItems WHERE user_id = 305;
 
-- media/kuva.jpg näyttää 
-. app.use('/media', express.static('media'));
+-- Hae kaikki tuotteet, joilla on alennus
+SELECT * FROM Products WHERE discount > 0;
 
--http-request.http
+-- Päivitä esimerkkikäyttötilanteessa tietyn tuotteen hinta
+UPDATE Products
+SET price = 24.99
+WHERE product_id = 1;
 
-### Hae kaikki mediaesineet
-
-get http://localhost:3000/api/media
-
-### Hae media esitys
-
-get http://localhost:3000/api/media/1
-
-### Lisää media esitys
-
-post http://localhost:3000/api/media
-Content-Type: application/json
-
-
-{
-  "filename": "new_image.jpg",
-  "filesize": 300000,
-  "title": "New Image",
-  "description": "Description of the new image",
-  "user_id": 1607,
-  "media_type": "image/jpeg",
-  "created_at": "2023-10-20T15:00:00.000Z"
-}
-
-Miten pystyn tehdä git push express branchiin?
-
-1- git add .
-2- git commit -m "message"
-3- git push origin express
-
-
-
+-- Poista esimerkkikäyttötilanteessa tietty palaute (esim. feedback_id = 1)
+DELETE FROM Feedback
+WHERE feedback_id = 1;

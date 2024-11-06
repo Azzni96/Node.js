@@ -1,65 +1,74 @@
+-- Poistetaan vanha tietokanta ja luodaan uusi
 DROP DATABASE IF EXISTS mediashare;
 CREATE DATABASE mediashare;
 USE mediashare;
 
+-- Käyttäjät-taulu
 CREATE TABLE Users (
   user_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   username VARCHAR(255) NOT NULL UNIQUE,
   password VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   user_level_id INT NOT NULL,
-  created_at TIMESTAMP NOT NULL
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Mediat-taulu
 CREATE TABLE MediaItems (
-  media_id INT NOT NULL AUTO_INCREMENT,
+  media_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
   user_id INT NOT NULL,
   filename VARCHAR(255) NOT NULL,
   filesize INT NOT NULL,
   media_type VARCHAR(255) NOT NULL,
   title VARCHAR(255) NOT NULL,
   description VARCHAR(255),
-  created_at TIMESTAMP NOT NULL,
-  PRIMARY KEY (media_id),
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
-CREATE TABLE products (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    price DECIMAL(10, 2) NOT NULL,
-    discount DECIMAL(5, 2) DEFAULT 0.00, 
-    description TEXT,
-    image_urls TEXT, 
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+-- Tuotteet-taulu
+CREATE TABLE Products (
+  product_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  media_id INT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  price DECIMAL(10, 2) NOT NULL,
+  discount DECIMAL(5, 2) DEFAULT 0.00,
+  description TEXT,
+  image_urls TEXT,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (media_id) REFERENCES MediaItems(media_id)
 );
 
-CREATE TABLE feedback (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) NOT NULL, 
-    message TEXT NOT NULL, 
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+-- Palaute-taulu
+CREATE TABLE Feedback (
+  feedback_id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
+  media_id INT NOT NULL,
+  user_id INT NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (media_id) REFERENCES MediaItems(media_id),
+  FOREIGN KEY (user_id) REFERENCES Users(user_id)
 );
 
-INSERT INTO Users VALUES (260, 'VCHar', 'secret123', 'vchar@example.com', 1, null);
-INSERT INTO Users VALUES (305, 'Donatello', 'secret234', 'dona@example.com', 1, null);
+-- Esimerkkitietojen lisääminen Users-tauluun
+INSERT INTO Users (username, password, email, user_level_id) VALUES 
+  ('VCHar', 'salasana123', 'vchar@example.com', 1),
+  ('Donatello', 'salasana234', 'dona@example.com', 1);
 
--- Inserting multiple records at once
-INSERT INTO MediaItems (filename, filesize, title, description, user_id, media_type, created_at) 
-  VALUES ('ffd8.jpg', 887574, 'Favorite drink', null, 305, 'image/jpeg', null),
-         ('dbbd.jpg', 60703, 'Miika', 'My Photo', 305, 'image/jpeg', NULL),
-         ('2f9b.jpg', 30635, 'Aksux and Jane', 'friends', 260, 'image/jpeg', null);
+-- Esimerkkitietojen lisääminen MediaItems-tauluun
+INSERT INTO MediaItems (filename, filesize, title, description, user_id, media_type) VALUES 
+  ('ffd8.jpg', 887574, 'Lempijuoma', NULL, 305, 'image/jpeg'),
+  ('dbbd.jpg', 60703, 'Miika', 'Oma kuva', 305, 'image/jpeg');
 
-INSERT INTO products (name, price, discount, description, image_urls) 
-VALUES 
-    ('Product A', 19.99, 2.00, 'This is a sample product description for Product A.', 'imageA.jpg'),
-    ('Product B', 29.99, 0.00, 'Description for Product B, a high-quality item.', 'imageB.jpg'),
-    ('Product C', 9.99, 1.00, 'Affordable product C with a small discount.', 'imageC.jpg');
+-- Esimerkkitietojen lisääminen Products-tauluun
+INSERT INTO Products (media_id, name, price, discount, description, image_urls) VALUES 
+  (1, 'Tuote A', 19.99, 2.00, 'Esimerkkituotteen kuvaus Tuote A:lle.', 'kuvaA.jpg'),
+  (2, 'Tuote B', 29.99, 0.00, 'Kuvaus Tuote B:lle, laadukas tuote.', 'kuvaB.jpg');
 
--- Sample insertions into `feedback`
-INSERT INTO feedback (name, email, message) 
-VALUES 
-    ('John Doe', 'john.doe@example.com', 'Great products! I am very satisfied.'),
-    ('Jane Smith', 'jane.smith@example.com', 'Customer support was very helpful!'),
-    ('Alice Johnson', 'alice.johnson@example.com', 'Delivery was quick and the items are as described.');
+-- Esimerkkitietojen lisääminen Feedback-tauluun
+INSERT INTO Feedback (media_id, user_id, name, email, message) VALUES 
+  (1, 305, 'John Doe', 'john.doe@example.com', 'Mahtavia tuotteita! Olen erittäin tyytyväinen.'),
+  (2, 260, 'Jane Smith', 'jane.smith@example.com', 'Asiakastuki oli erittäin avulias!'),
+  (1, 260, 'Alice Johnson', 'alice.johnson@example.com', 'Toimitus oli nopea ja tuotteet olivat kuvauksen mukaisia.');
